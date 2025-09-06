@@ -17,6 +17,11 @@ body {
   padding: 0 10px;
 }
 
+.header-buttons {
+  display: flex;
+  gap: 10px;
+}
+
 .title {
   margin: 0;
   flex: 1;
@@ -29,6 +34,43 @@ body {
   width: 100%;
 }
 
+/* Borderless mode styles */
+.app.borderless-mode {
+  padding: 0;
+}
+
+.app.borderless-mode .video-grid {
+  height: 100vh;
+  gap: 0;
+}
+
+.borderless-hint {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 10px 15px;
+  border-radius: 5px;
+  font-size: 14px;
+  z-index: 1000;
+  cursor: pointer;
+  pointer-events: auto;
+  animation: fadeInOut 3s ease-in-out;
+  transition: background-color 0.2s;
+}
+
+.borderless-hint:hover {
+  background-color: rgba(0, 0, 0, 0.9);
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
 .video-element {
   display: flex;
   flex-direction: column;
@@ -38,6 +80,13 @@ body {
   border-radius: 8px;
   min-height: 0; /* Allow flex items to shrink */
   overflow: hidden;
+}
+
+.video-element.borderless {
+  border: none;
+  padding: 0;
+  background-color: transparent;
+  border-radius: 0;
 }
 
 .top-row-controls {
@@ -93,6 +142,22 @@ body {
   font-style: italic;
   color: #888;
   min-height: 200px;
+}
+
+.borderless-toggle {
+  background-color: #333;
+  color: #fff;
+  border: none;
+  font-size: 1em;
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 10px 20px;
+  white-space: nowrap;
+  transition: background-color 0.2s;
+}
+
+.borderless-toggle:hover {
+  background-color: #555;
 }
 
 .add-button {

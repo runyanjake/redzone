@@ -5,6 +5,7 @@ import './App.css';
 function App() {
   const [videos, setVideos] = useState([{ id: 1, url: '', playerState: 'unstarted' }]);
   const [gridLayout, setGridLayout] = useState({ rows: 1, cols: 1 });
+  const [borderlessMode, setBorderlessMode] = useState(false);
   const playerRefs = useRef({});
   const containerRef = useRef(null);
 
@@ -72,6 +73,44 @@ function App() {
     return () => window.removeEventListener('resize', updateLayout);
   }, [videos.length]);
 
+  // Detect fullscreen changes and toggle borderless mode
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const isFullscreen = !!(document.fullscreenElement || 
+                             document.webkitFullscreenElement || 
+                             document.mozFullScreenElement || 
+                             document.msFullscreenElement);
+      setBorderlessMode(isFullscreen);
+    };
+
+    const handleKeyPress = (event) => {
+      // Only handle escape if we're in borderless mode
+      if (event.key === 'Escape' && borderlessMode) {
+        event.preventDefault();
+        event.stopPropagation();
+        setBorderlessMode(false);
+      }
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+    
+    // Use capture phase to ensure we catch the event before video players
+    document.addEventListener('keydown', handleKeyPress, true);
+    window.addEventListener('keydown', handleKeyPress, true);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+      document.removeEventListener('keydown', handleKeyPress, true);
+      window.removeEventListener('keydown', handleKeyPress, true);
+    };
+  }, [borderlessMode]);
+
   const extractVideoId = (url) => {
     const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
     const match = url.match(regex);
@@ -115,16 +154,34 @@ function App() {
   };
 
   return (
-    <div className="app" ref={containerRef}>
-      <div className="header">
-        <h1 className="title">Video Player Redzone</h1>
-        <button 
-          className="add-button" 
-          onClick={handleAddVideo}
+    <div className={`app ${borderlessMode ? 'borderless-mode' : ''}`} ref={containerRef}>
+      {!borderlessMode && (
+        <div className="header">
+          <h1 className="title">Video Player Redzone</h1>
+          <div className="header-buttons">
+            <button 
+              className="borderless-toggle" 
+              onClick={() => setBorderlessMode(!borderlessMode)}
+            >
+              {borderlessMode ? 'Exit Borderless' : 'Borderless Mode'}
+            </button>
+            <button 
+              className="add-button" 
+              onClick={handleAddVideo}
+            >
+              + Add Video
+            </button>
+          </div>
+        </div>
+      )}
+      {borderlessMode && (
+        <div 
+          className="borderless-hint"
+          onClick={() => setBorderlessMode(false)}
         >
-          + Add Video
-        </button>
-      </div>
+          Press ESC or click here to exit
+        </div>
+      )}
       <div 
         className="video-grid"
         style={{
@@ -135,29 +192,32 @@ function App() {
         {videos.map((video, index) => {
           const buttonText = video.playerState === 'playing' ? 'Pause / Mute' : 'Play / Unmute';
           const gridPosition = getVideoGridPosition(index, videos.length, gridLayout.cols);
+          
           return (
             <div 
               key={video.id} 
-              className="video-element"
+              className={`video-element ${borderlessMode ? 'borderless' : ''}`}
               style={{
                 gridColumn: gridPosition.gridColumn,
                 gridRow: gridPosition.gridRow
               }}
             >
-              <div className="top-row-controls">
-                <input
-                  type="text"
-                  placeholder="Paste YouTube URL here"
-                  value={video.url}
-                  onChange={(e) => handleUrlChange(e, video.id)}
-                />
-                <button 
-                  className="play-toggle" 
-                  onClick={() => handleTogglePlay(video.id)}
-                >
-                  {buttonText}
-                </button>
-              </div>
+              {!borderlessMode && (
+                <div className="top-row-controls">
+                  <input
+                    type="text"
+                    placeholder="Paste YouTube URL here"
+                    value={video.url}
+                    onChange={(e) => handleUrlChange(e, video.id)}
+                  />
+                  <button 
+                    className="play-toggle" 
+                    onClick={() => handleTogglePlay(video.id)}
+                  >
+                    {buttonText}
+                  </button>
+                </div>
+              )}
               <VideoPlayer 
                 videoId={extractVideoId(video.url)} 
                 onTogglePlay={(newState) => handlePlayerStateChange(video.id, newState)}
