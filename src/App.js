@@ -8,6 +8,37 @@ function App() {
   const playerRefs = useRef({});
   const containerRef = useRef(null);
 
+  // Calculate grid positioning for videos, handling odd numbers with centering
+  const getVideoGridPosition = (videoIndex, totalVideos, gridCols) => {
+    if (totalVideos % 2 === 0) {
+      // Even number - normal grid positioning
+      return {
+        gridColumn: (videoIndex % gridCols) + 1,
+        gridRow: Math.floor(videoIndex / gridCols) + 1
+      };
+    } else {
+      // Odd number - center the last row
+      const fullRows = Math.floor(totalVideos / gridCols);
+      const videosInLastRow = totalVideos % gridCols;
+      
+      if (videoIndex < fullRows * gridCols) {
+        // Videos in full rows
+        return {
+          gridColumn: (videoIndex % gridCols) + 1,
+          gridRow: Math.floor(videoIndex / gridCols) + 1
+        };
+      } else {
+        // Videos in the last (partial) row - center them
+        const startCol = Math.floor((gridCols - videosInLastRow) / 2) + 1;
+        const colInLastRow = videoIndex - (fullRows * gridCols);
+        return {
+          gridColumn: startCol + colInLastRow,
+          gridRow: fullRows + 1
+        };
+      }
+    }
+  };
+
   // Optimal tiling algorithm to maximize window coverage
   const calculateOptimalGrid = (videoCount, containerWidth, containerHeight) => {
     if (videoCount <= 0) return { rows: 1, cols: 1 };
@@ -21,13 +52,18 @@ function App() {
     const videoAspectRatio = 16 / 9;
     
     let bestLayout = { rows: 1, cols: videoCount };
-    let bestCoverage = 0;
+    let bestScore = 0;
     
-    // Try different row/column combinations
-    for (let rows = 1; rows <= Math.ceil(Math.sqrt(videoCount * 2)); rows++) {
-      const cols = Math.ceil(videoCount / rows);
+    // For odd numbers, use the next even number as base and allow non-full rows
+    const baseCount = videoCount % 2 === 0 ? videoCount : videoCount + 1;
+    
+    // Try different row/column combinations, preferring wider layouts
+    const maxRows = Math.ceil(Math.sqrt(baseCount * 2));
+    
+    for (let rows = 1; rows <= maxRows; rows++) {
+      const cols = Math.ceil(baseCount / rows);
       
-      // Calculate tile dimensions
+      // Calculate tile dimensions based on the base grid
       const tileWidth = availableWidth / cols;
       const tileHeight = availableHeight / rows;
       
@@ -50,10 +86,20 @@ function App() {
       
       // Prefer layouts that use all tiles efficiently
       const efficiency = videoCount / (rows * cols);
-      const finalScore = adjustedCoverage * efficiency;
       
-      if (finalScore > bestCoverage) {
-        bestCoverage = finalScore;
+      // STRONG preference for wider layouts (cols > rows)
+      const widthPreference = cols > rows ? 1.2 : (cols === rows ? 1.0 : 0.8);
+      
+      // Additional preference for layouts that are not too tall
+      const heightPenalty = rows > 3 ? 0.9 : 1.0;
+      
+      // Bonus for layouts that work well with odd numbers (allow centering)
+      const oddNumberBonus = videoCount % 2 === 1 && cols > 2 ? 1.1 : 1.0;
+      
+      const finalScore = adjustedCoverage * efficiency * widthPreference * heightPenalty * oddNumberBonus;
+      
+      if (finalScore > bestScore) {
+        bestScore = finalScore;
         bestLayout = { rows, cols };
       }
     }
@@ -132,10 +178,13 @@ function App() {
           gridTemplateColumns: `repeat(${gridLayout.cols}, 1fr)`
         }}
       >
-        {videos.map((video) => {
+        {videos.map((video, index) => {
           const buttonText = video.playerState === 'playing' ? 'Pause / Mute' : 'Play / Unmute';
           return (
-            <div key={video.id} className="video-element">
+            <div 
+              key={video.id} 
+              className="video-element"
+            >
               <div className="top-row-controls">
                 <input
                   type="text"
@@ -160,7 +209,10 @@ function App() {
             </div>
           );
         })}
-        <button className="add-button" onClick={handleAddVideo}>
+        <button 
+          className="add-button" 
+          onClick={handleAddVideo}
+        >
           +
         </button>
       </div>
