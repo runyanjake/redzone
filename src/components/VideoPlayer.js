@@ -23,6 +23,8 @@ const VideoPlayer = ({ videoId, onTogglePlay, playerState, buttonText, onPlayerR
   };
 
   const opts = {
+    width: '100%',
+    height: '100%',
     playerVars: {
       controls: 0,
       loop: 1,

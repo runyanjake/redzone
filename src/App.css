@@ -15,17 +15,20 @@ body {
 
 .video-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
   gap: 10px;
+  height: calc(100vh - 120px); /* Account for title and padding */
+  width: 100%;
 }
 
 .video-element {
   display: flex;
-  flex-direction: column; /* This is the key change */
+  flex-direction: column;
   border: 1px solid #333;
   padding: 10px;
   background-color: #111;
   border-radius: 8px;
+  min-height: 0; /* Allow flex items to shrink */
+  overflow: hidden;
 }
 
 .top-row-controls {
@@ -57,8 +60,8 @@ body {
 .youtube-wrapper {
   position: relative;
   width: 100%;
-  height: 0;
-  padding-bottom: 56.25%; /* 16:9 aspect ratio */
+  flex: 1; /* Take remaining space */
+  min-height: 0;
   overflow: hidden;
 }
 
@@ -72,7 +75,7 @@ body {
 
 .placeholder {
   width: 100%;
-  height: 225px;
+  flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -80,6 +83,7 @@ body {
   border-radius: 4px;
   font-style: italic;
   color: #888;
+  min-height: 200px;
 }
 
 .add-button {
