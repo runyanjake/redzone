@@ -157,7 +157,7 @@ function App() {
     <div className={`app ${borderlessMode ? 'borderless-mode' : ''}`} ref={containerRef}>
       {!borderlessMode && (
         <div className="header">
-          <h1 className="title">Video Player Redzone</h1>
+          <h1 className="title">Web Video Redzone</h1>
           <div className="header-buttons">
             <button 
               className="borderless-toggle" 
