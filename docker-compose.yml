@@ -11,8 +11,7 @@ services:
     networks:
       - traefik
     labels:
-      - "traefik.http.routers.redzone.rule=Host(`redzone.whitney.rip`)"
-      - "traefik.http.routers.redzone.entrypoints=websecure"
-      - "traefik.http.services.redzone.loadbalancer.server.port=80"
-    volumes:
-      - /pwspool/software/redzone/:/usr/share/nginx/html/
+      - traefik.http.routers.redzone.rule=Host(`redzone.whitney.rip`)
+      - traefik.http.routers.redzone.tls=true
+      - traefik.http.routers.redzone.tls.certresolver=lets-encrypt
+      - traefik.http.services.redzone.loadbalancer.server.port=80
