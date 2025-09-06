@@ -9,14 +9,23 @@ body {
   padding: 20px;
 }
 
-.title {
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 20px;
+  padding: 0 10px;
+}
+
+.title {
+  margin: 0;
+  flex: 1;
 }
 
 .video-grid {
   display: grid;
   gap: 10px;
-  height: calc(100vh - 120px); /* Account for title and padding */
+  height: calc(100vh - 140px); /* Account for header and padding */
   width: 100%;
 }
 
@@ -87,11 +96,17 @@ body {
 }
 
 .add-button {
-  background-color: #333;
+  background-color: #c00;
   color: #fff;
   border: none;
-  font-size: 2em;
+  font-size: 1em;
   cursor: pointer;
-  border-radius: 8px;
-  padding: 20px;
+  border-radius: 6px;
+  padding: 10px 20px;
+  white-space: nowrap;
+  transition: background-color 0.2s;
+}
+
+.add-button:hover {
+  background-color: #e00;
 }

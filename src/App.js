@@ -170,7 +170,15 @@ function App() {
 
   return (
     <div className="app" ref={containerRef}>
-      <h1 className="title">Video Player Redzone</h1>
+      <div className="header">
+        <h1 className="title">Video Player Redzone</h1>
+        <button 
+          className="add-button" 
+          onClick={handleAddVideo}
+        >
+          + Add Video
+        </button>
+      </div>
       <div 
         className="video-grid"
         style={{
@@ -209,12 +217,6 @@ function App() {
             </div>
           );
         })}
-        <button 
-          className="add-button" 
-          onClick={handleAddVideo}
-        >
-          +
-        </button>
       </div>
     </div>
   );
