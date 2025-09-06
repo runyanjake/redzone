@@ -10,25 +10,25 @@ function App() {
 
   // Calculate grid positioning for videos, handling odd numbers with centering
   const getVideoGridPosition = (videoIndex, totalVideos, gridCols) => {
-    if (totalVideos % 2 === 0) {
-      // Even number - normal grid positioning
+    const fullRows = Math.floor(totalVideos / gridCols);
+    const videosInLastRow = totalVideos % gridCols;
+    
+    if (videoIndex < fullRows * gridCols) {
+      // Videos in full rows - normal positioning
       return {
         gridColumn: (videoIndex % gridCols) + 1,
         gridRow: Math.floor(videoIndex / gridCols) + 1
       };
     } else {
-      // Odd number - center the last row
-      const fullRows = Math.floor(totalVideos / gridCols);
-      const videosInLastRow = totalVideos % gridCols;
-      
-      if (videoIndex < fullRows * gridCols) {
-        // Videos in full rows
+      // Videos in the last (partial) row - center them
+      if (videosInLastRow === 0) {
+        // No partial row
         return {
           gridColumn: (videoIndex % gridCols) + 1,
           gridRow: Math.floor(videoIndex / gridCols) + 1
         };
       } else {
-        // Videos in the last (partial) row - center them
+        // Center the partial row
         const startCol = Math.floor((gridCols - videosInLastRow) / 2) + 1;
         const colInLastRow = videoIndex - (fullRows * gridCols);
         return {
@@ -39,72 +39,18 @@ function App() {
     }
   };
 
-  // Optimal tiling algorithm to maximize window coverage
+  // Simple tiling algorithm based on square grids
   const calculateOptimalGrid = (videoCount, containerWidth, containerHeight) => {
     if (videoCount <= 0) return { rows: 1, cols: 1 };
     if (videoCount === 1) return { rows: 1, cols: 1 };
+    if (videoCount === 2) return { rows: 1, cols: 2 };
     
-    // Account for padding, gaps, and controls
-    const availableWidth = containerWidth - 40; // padding
-    const availableHeight = containerHeight - 120; // title + padding
+    // For n > 2: find the next square that is >= n
+    const nextSquare = Math.ceil(Math.sqrt(videoCount));
+    const rows = nextSquare;
+    const cols = Math.ceil(videoCount / rows);
     
-    // Video aspect ratio (16:9)
-    const videoAspectRatio = 16 / 9;
-    
-    let bestLayout = { rows: 1, cols: videoCount };
-    let bestScore = 0;
-    
-    // For odd numbers, use the next even number as base and allow non-full rows
-    const baseCount = videoCount % 2 === 0 ? videoCount : videoCount + 1;
-    
-    // Try different row/column combinations, preferring wider layouts
-    const maxRows = Math.ceil(Math.sqrt(baseCount * 2));
-    
-    for (let rows = 1; rows <= maxRows; rows++) {
-      const cols = Math.ceil(baseCount / rows);
-      
-      // Calculate tile dimensions based on the base grid
-      const tileWidth = availableWidth / cols;
-      const tileHeight = availableHeight / rows;
-      
-      // Calculate video dimensions within tile (accounting for controls)
-      const videoWidth = tileWidth - 20; // padding
-      const videoHeight = tileHeight - 60; // controls height
-      
-      // Check if aspect ratio is maintained
-      const actualAspectRatio = videoWidth / videoHeight;
-      const aspectRatioDiff = Math.abs(actualAspectRatio - videoAspectRatio);
-      
-      // Calculate coverage (area used by videos)
-      const totalVideoArea = videoCount * videoWidth * videoHeight;
-      const totalAvailableArea = availableWidth * availableHeight;
-      const coverage = totalVideoArea / totalAvailableArea;
-      
-      // Penalize layouts that don't maintain aspect ratio well
-      const aspectRatioPenalty = aspectRatioDiff * 0.1;
-      const adjustedCoverage = coverage - aspectRatioPenalty;
-      
-      // Prefer layouts that use all tiles efficiently
-      const efficiency = videoCount / (rows * cols);
-      
-      // STRONG preference for wider layouts (cols > rows)
-      const widthPreference = cols > rows ? 1.2 : (cols === rows ? 1.0 : 0.8);
-      
-      // Additional preference for layouts that are not too tall
-      const heightPenalty = rows > 3 ? 0.9 : 1.0;
-      
-      // Bonus for layouts that work well with odd numbers (allow centering)
-      const oddNumberBonus = videoCount % 2 === 1 && cols > 2 ? 1.1 : 1.0;
-      
-      const finalScore = adjustedCoverage * efficiency * widthPreference * heightPenalty * oddNumberBonus;
-      
-      if (finalScore > bestScore) {
-        bestScore = finalScore;
-        bestLayout = { rows, cols };
-      }
-    }
-    
-    return bestLayout;
+    return { rows, cols };
   };
 
   // Update grid layout when videos change or window resizes
@@ -188,10 +134,15 @@ function App() {
       >
         {videos.map((video, index) => {
           const buttonText = video.playerState === 'playing' ? 'Pause / Mute' : 'Play / Unmute';
+          const gridPosition = getVideoGridPosition(index, videos.length, gridLayout.cols);
           return (
             <div 
               key={video.id} 
               className="video-element"
+              style={{
+                gridColumn: gridPosition.gridColumn,
+                gridRow: gridPosition.gridRow
+              }}
             >
               <div className="top-row-controls">
                 <input
