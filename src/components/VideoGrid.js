@@ -2,10 +2,8 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import VideoPlayer from './VideoPlayer';
 import { calculateOptimalGrid, getVideoGridPosition } from '../utils/gridUtils';
 
-/**
- * VideoGrid is now the main container component for the application.
- * It manages all state, event handling, and the overall layout.
- */
+//Grid object defining a layout and managing a list of videos.
+// Divides space among videos and manages state.
 function VideoGrid() {
   const [videos, setVideos] = useState([{ id: 1, url: '', playerState: 'unstarted', isMuted: true }]);
   const [gridLayout, setGridLayout] = useState({ rows: 1, cols: 1 });

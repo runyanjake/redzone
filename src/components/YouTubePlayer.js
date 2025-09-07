@@ -27,10 +27,11 @@ const YouTubePlayer = ({ videoId, onTogglePlay, onPlayerReady }) => {
     width: '100%',
     height: '100%',
     playerVars: {
-      controls: 0,
+      controls: 1, //Allow controls to be displayed
       loop: 1,
-      playlist: videoId, // Required for loop to work on single videos
-      autoplay: 0,
+      playlist: videoId,
+      autoplay: 1, //Auto play the current (and any following if playlist) videos.
+      rel: 0, // Do not show related videos, as this would cause them to autoplay.
     },
   };
 
@@ -41,7 +42,7 @@ const YouTubePlayer = ({ videoId, onTogglePlay, onPlayerReady }) => {
         opts={opts}
         onReady={onReady}
         onStateChange={onStateChange}
-        className="youtube-iframe" // A class for the iframe itself
+        className="youtube-iframe"
       />
     </div>
   );

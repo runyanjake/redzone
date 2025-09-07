@@ -1,20 +1,16 @@
 import React, { useCallback } from 'react';
 import YouTubePlayer from './YouTubePlayer';
 import TwitchPlayer from './TwitchPlayer';
-import GenericStreamPlayer from './GenericStreamPlayer';
+import HLSStreamPlayer from './HLSStreamPlayer';
 import { getYouTubeVideoId, getTwitchChannel } from '../utils/videoUtils';
 import './VideoPlayer.css';
 
-/**
- * The factory component now uses useCallback to stabilize the functions it
- * passes down to the child players, preventing unnecessary re-renders.
- */
 const VideoPlayer = ({ url, onTogglePlay, onPlayerReady, videoId }) => {
   const youTubeId = getYouTubeVideoId(url);
   const twitchChannel = getTwitchChannel(url);
   const genericStream = url && !youTubeId && !twitchChannel;
 
-  // These handlers are now memoized to prevent re-creating them on every render.
+  //Handler for toggling playback state, if supported by the video player.
   const handleToggle = useCallback((newState) => {
     onTogglePlay(videoId, newState);
   }, [onTogglePlay, videoId]);
@@ -45,7 +41,7 @@ const VideoPlayer = ({ url, onTogglePlay, onPlayerReady, videoId }) => {
 
   if (genericStream) {
     return (
-      <GenericStreamPlayer
+      <HLSStreamPlayer
         streamUrl={url}
         onPlayerReady={handleReady}
       />

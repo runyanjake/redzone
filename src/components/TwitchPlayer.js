@@ -4,7 +4,7 @@ import React, { useEffect, useRef } from 'react';
  * Handles embedding and controlling Twitch streams using the Twitch Embed API.
  */
 const TwitchPlayer = ({ channel, onTogglePlay, onPlayerReady }) => {
-  const embedRef = useRef(null); // Ref to hold the div for the player
+  const embedRef = useRef(null);
 
   useEffect(() => {
     let player = null;
@@ -16,6 +16,7 @@ const TwitchPlayer = ({ channel, onTogglePlay, onPlayerReady }) => {
           height: '100%',
           parent: [window.location.hostname], // IMPORTANT: Required by Twitch API
           muted: true, // Start muted to allow autoplay
+          //Cannot set controls=false here, as twitch forces controls to be visible.
         });
 
         player.addEventListener(window.Twitch.Player.READY, () => {
