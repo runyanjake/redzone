@@ -7,7 +7,8 @@ const HLSStreamPlayer = ({ streamUrl, onPlayerReady }) => {
   // Notify the caller when the player is ready.
   useEffect(() => {
     if (videoRef.current && onPlayerReady) {
-      onPlayerReady(videoRef.current);
+      // Pass the player instance and its type back to the parent.
+      onPlayerReady({ player: videoRef.current, type: 'hls' });
     }
   }, [onPlayerReady]);
 
@@ -18,7 +19,7 @@ const HLSStreamPlayer = ({ streamUrl, onPlayerReady }) => {
       style={{ width: '100%', height: '100%', backgroundColor: 'black' }} 
       controls={true} //Enable stream controls
       autoPlay={true}
-      muted={false} // Start muted to comply with browser autoplay policies
+      muted={true} // Start muted to comply with browser autoplay policies
       loop={true}
     />
   );

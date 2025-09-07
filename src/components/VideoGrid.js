@@ -69,8 +69,27 @@ function VideoGrid() {
     );
   }, []);
 
-  const handlePlayerReady = useCallback((id, player) => {
+  const handlePlayerReady = useCallback((id, playerData) => {
+    const { player, type } = playerData;
     playerRefs.current[id] = player;
+
+    //Unmute and start players when player is ready.
+    switch (type) {
+      case 'youtube':
+        player.unMute();
+        player.playVideo();
+        break;
+      case 'twitch':
+        player.setMuted(false);
+        player.play();
+        break;
+      case 'hls':
+        player.muted = false;
+        player.play().catch(e => console.error("Autoplay was prevented by browser:", e));
+        break;
+      default:
+        console.warn('Unknown player type ready:', type);
+    }
   }, []);
 
   const handleAddVideo = () => {

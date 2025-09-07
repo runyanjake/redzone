@@ -15,8 +15,9 @@ const VideoPlayer = ({ url, onTogglePlay, onPlayerReady, videoId }) => {
     onTogglePlay(videoId, newState);
   }, [onTogglePlay, videoId]);
 
-  const handleReady = useCallback((player) => {
-    onPlayerReady(videoId, player);
+  // The 'playerData' object now contains both the player instance and its type.
+  const handleReady = useCallback((playerData) => {
+    onPlayerReady(videoId, playerData);
   }, [onPlayerReady, videoId]);
 
   if (youTubeId) {

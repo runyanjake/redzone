@@ -8,7 +8,8 @@ const YouTubePlayer = ({ videoId, onTogglePlay, onPlayerReady }) => {
 
   const onReady = (event) => {
     if (onPlayerReady) {
-      onPlayerReady(event.target);
+      // Pass the player instance and its type back to the parent.
+      onPlayerReady({ player: event.target, type: 'youtube' });
     }
   };
 

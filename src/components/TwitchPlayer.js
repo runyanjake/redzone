@@ -21,7 +21,8 @@ const TwitchPlayer = ({ channel, onTogglePlay, onPlayerReady }) => {
 
         player.addEventListener(window.Twitch.Player.READY, () => {
           if (onPlayerReady) {
-            onPlayerReady(player);
+            // Pass the player instance and its type back to the parent.
+            onPlayerReady({ player, type: 'twitch' });
           }
         });
 
@@ -40,9 +41,10 @@ const TwitchPlayer = ({ channel, onTogglePlay, onPlayerReady }) => {
       initializePlayer();
     }
 
+    const currentEmbedRef = embedRef.current;
     return () => {
-        if (embedRef.current) {
-            embedRef.current.innerHTML = "";
+        if (currentEmbedRef) {
+            currentEmbedRef.innerHTML = "";
         }
     }
 
