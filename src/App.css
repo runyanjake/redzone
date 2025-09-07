@@ -1,6 +1,23 @@
+:root {
+  --color-background: #000;
+  --color-text-primary: #fff;
+  --color-text-secondary: #888;
+  --color-border: #333;
+  --color-surface-1: #111;
+  --color-surface-2: #222;
+  --color-surface-3: #333;
+  --color-surface-hover: #555;
+  --color-accent-primary: #c00;
+  --color-accent-hover: #e00;
+
+  --rgb-dark: 0, 0, 0;
+  --color-hint-bg: rgba(var(--rgb-dark), 0.7);
+  --color-hint-bg-hover: rgba(var(--rgb-dark), 0.9);
+}
+
 body {
-  background-color: #000;
-  color: #fff;
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
   font-family: Arial, sans-serif;
 }
 
@@ -30,11 +47,10 @@ body {
 .video-grid {
   display: grid;
   gap: 10px;
-  height: calc(100vh - 140px); /* Account for header and padding */
+  height: calc(100vh - 140px);
   width: 100%;
 }
 
-/* Borderless mode styles */
 .app.borderless-mode {
   padding: 0;
 }
@@ -48,8 +64,8 @@ body {
   position: fixed;
   top: 20px;
   right: 20px;
-  background-color: rgba(0, 0, 0, 0.7);
-  color: white;
+  background-color: var(--color-hint-bg);
+  color: var(--color-text-primary);
   padding: 10px 15px;
   border-radius: 5px;
   font-size: 14px;
@@ -61,7 +77,7 @@ body {
 }
 
 .borderless-hint:hover {
-  background-color: rgba(0, 0, 0, 0.9);
+  background-color: var(--color-hint-bg-hover);
 }
 
 @keyframes fadeInOut {
@@ -74,11 +90,11 @@ body {
 .video-element {
   display: flex;
   flex-direction: column;
-  border: 1px solid #333;
+  border: 1px solid var(--color-border);
   padding: 10px;
-  background-color: #111;
+  background-color: var(--color-surface-1);
   border-radius: 8px;
-  min-height: 0; /* Allow flex items to shrink */
+  min-height: 0;
   overflow: hidden;
 }
 
@@ -98,9 +114,9 @@ body {
 .top-row-controls input {
   flex: 1;
   padding: 8px;
-  border: 1px solid #555;
-  background-color: #222;
-  color: #fff;
+  border: 1px solid var(--color-surface-hover);
+  background-color: var(--color-surface-2);
+  color: var(--color-text-primary);
   border-radius: 4px;
   margin-right: 10px;
 }
@@ -108,70 +124,9 @@ body {
 .play-toggle {
   padding: 8px 12px;
   border: none;
-  background-color: #c00;
-  color: white;
+  background-color: var(--color-accent-primary);
+  color: var(--color-text-primary);
   border-radius: 4px;
   cursor: pointer;
   white-space: nowrap;
-}
-
-.youtube-wrapper {
-  position: relative;
-  width: 100%;
-  flex: 1; /* Take remaining space */
-  min-height: 0;
-  overflow: hidden;
-}
-
-.youtube-wrapper iframe {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.placeholder {
-  width: 100%;
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #222;
-  border-radius: 4px;
-  font-style: italic;
-  color: #888;
-  min-height: 200px;
-}
-
-.borderless-toggle {
-  background-color: #333;
-  color: #fff;
-  border: none;
-  font-size: 1em;
-  cursor: pointer;
-  border-radius: 6px;
-  padding: 10px 20px;
-  white-space: nowrap;
-  transition: background-color 0.2s;
-}
-
-.borderless-toggle:hover {
-  background-color: #555;
-}
-
-.add-button {
-  background-color: #c00;
-  color: #fff;
-  border: none;
-  font-size: 1em;
-  cursor: pointer;
-  border-radius: 6px;
-  padding: 10px 20px;
-  white-space: nowrap;
-  transition: background-color 0.2s;
-}
-
-.add-button:hover {
-  background-color: #e00;
 }

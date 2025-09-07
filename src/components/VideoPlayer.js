@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import YouTube from 'react-youtube';
+import './VideoPlayer.css';
 
 const VideoPlayer = ({ videoId, onTogglePlay, playerState, buttonText, onPlayerReady }) => {
   const playerRef = useRef(null);
