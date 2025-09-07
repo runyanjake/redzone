@@ -1,12 +1,13 @@
 .youtube-wrapper {
   position: relative;
   width: 100%;
-  flex: 1;
+  flex: 1; /* Take remaining space */
   min-height: 0;
   overflow: hidden;
 }
 
-.youtube-wrapper iframe {
+.youtube-wrapper iframe,
+.youtube-iframe {
   position: absolute;
   top: 0;
   left: 0;
@@ -26,3 +27,4 @@
   color: var(--color-text-secondary);
   min-height: 200px;
 }
+

@@ -47,10 +47,11 @@ body {
 .video-grid {
   display: grid;
   gap: 10px;
-  height: calc(100vh - 140px);
+  height: calc(100vh - 140px); /* Account for header and padding */
   width: 100%;
 }
 
+/* Borderless mode styles */
 .app.borderless-mode {
   padding: 0;
 }
@@ -94,7 +95,7 @@ body {
   padding: 10px;
   background-color: var(--color-surface-1);
   border-radius: 8px;
-  min-height: 0;
+  min-height: 0; /* Allow flex items to shrink */
   overflow: hidden;
 }
 
@@ -129,4 +130,36 @@ body {
   border-radius: 4px;
   cursor: pointer;
   white-space: nowrap;
+}
+
+.borderless-toggle {
+  background-color: var(--color-surface-3);
+  color: var(--color-text-primary);
+  border: none;
+  font-size: 1em;
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 10px 20px;
+  white-space: nowrap;
+  transition: background-color 0.2s;
+}
+
+.borderless-toggle:hover {
+  background-color: var(--color-surface-hover);
+}
+
+.add-button {
+  background-color: var(--color-accent-primary);
+  color: var(--color-text-primary);
+  border: none;
+  font-size: 1em;
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 10px 20px;
+  white-space: nowrap;
+  transition: background-color 0.2s;
+}
+
+.add-button:hover {
+  background-color: var(--color-accent-hover);
 }

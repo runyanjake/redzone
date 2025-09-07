@@ -1,53 +1,63 @@
-import React, { useState, useRef } from 'react';
-import YouTube from 'react-youtube';
+import React, { useCallback } from 'react';
+import YouTubePlayer from './YouTubePlayer';
+import TwitchPlayer from './TwitchPlayer';
+import GenericStreamPlayer from './GenericStreamPlayer';
+import { getYouTubeVideoId, getTwitchChannel } from '../utils/videoUtils';
 import './VideoPlayer.css';
 
-const VideoPlayer = ({ videoId, onTogglePlay, playerState, buttonText, onPlayerReady }) => {
-  const playerRef = useRef(null);
+/**
+ * The factory component now uses useCallback to stabilize the functions it
+ * passes down to the child players, preventing unnecessary re-renders.
+ */
+const VideoPlayer = ({ url, onTogglePlay, onPlayerReady, videoId }) => {
+  const youTubeId = getYouTubeVideoId(url);
+  const twitchChannel = getTwitchChannel(url);
+  const genericStream = url && !youTubeId && !twitchChannel;
 
-  const onReady = (event) => {
-    playerRef.current = event.target;
-    if (onPlayerReady) {
-      onPlayerReady(event.target);
-    }
-  };
+  // These handlers are now memoized to prevent re-creating them on every render.
+  const handleToggle = useCallback((newState) => {
+    onTogglePlay(videoId, newState);
+  }, [onTogglePlay, videoId]);
 
-  const onStateChange = (event) => {
-    const playerStatus = event.data;
-    if (playerStatus === window.YT.PlayerState.PLAYING) {
-      onTogglePlay('playing');
-    } else if (playerStatus === window.YT.PlayerState.PAUSED) {
-      onTogglePlay('paused');
-    } else if (playerStatus === window.YT.PlayerState.ENDED) {
-      onTogglePlay('unstarted');
-    }
-  };
+  const handleReady = useCallback((player) => {
+    onPlayerReady(videoId, player);
+  }, [onPlayerReady, videoId]);
 
-  const opts = {
-    width: '100%',
-    height: '100%',
-    playerVars: {
-      controls: 0,
-      loop: 1,
-    },
-  };
+  if (youTubeId) {
+    return (
+      <YouTubePlayer
+        videoId={youTubeId}
+        onTogglePlay={handleToggle}
+        onPlayerReady={handleReady}
+      />
+    );
+  }
+
+  if (twitchChannel) {
+    return (
+      <TwitchPlayer
+        channel={twitchChannel}
+        onTogglePlay={handleToggle}
+        onPlayerReady={handleReady}
+      />
+    );
+  }
+
+  if (genericStream) {
+    return (
+      <GenericStreamPlayer
+        streamUrl={url}
+        onPlayerReady={handleReady}
+      />
+    );
+  }
 
   return (
-    <>
-      {videoId ? (
-        <div className="youtube-wrapper">
-          <YouTube
-            videoId={videoId}
-            opts={opts}
-            onReady={onReady}
-            onStateChange={onStateChange}
-          />
-        </div>
-      ) : (
-        <div className="placeholder">Enter a video URL to start a stream.</div>
-      )}
-    </>
+    <div className="placeholder">
+      Enter a YouTube, Twitch, or other stream URL to start.
+    </div>
   );
 };
 
 export default VideoPlayer;
+
