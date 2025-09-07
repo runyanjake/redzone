@@ -1,22 +1,26 @@
 import React from 'react';
 import VideoPlayer from './VideoPlayer';
 import { getVideoGridPosition } from '../utils/gridUtils';
-import { getYouTubeVideoId, getTwitchChannel } from '../utils/videoUtils';
-
 
 /**
  * Renders the grid of video players.
- * This component contains all the logic for positioning and displaying videos.
+ * This component now contains the direct event handler for URL changes.
+ * The play/pause button has been removed to favor direct interaction with the embeds.
  */
 const VideoGrid = ({ 
   videos, 
   gridLayout, 
   borderlessMode, 
-  handleUrlChange, 
-  handleTogglePlay,
+  onUrlChange, // Renamed prop
   handlePlayerStateChange,
   handlePlayerReady 
 }) => {
+
+  // This handler now lives inside the component that owns the input element.
+  const handleUrlChange = (e, id) => {
+    onUrlChange(id, e.target.value); // It calls the generic update function from props
+  };
+
   return (
     <div 
       className="video-grid"
@@ -26,8 +30,6 @@ const VideoGrid = ({
       }}
     >
       {videos.map((video, index) => {
-        const buttonText = video.playerState === 'playing' ? 'Pause / Mute' : 'Play / Unmute';
-        const isGeneric = video.url && !getYouTubeVideoId(video.url) && !getTwitchChannel(video.url);
         const gridPosition = getVideoGridPosition(index, videos.length, gridLayout.cols);
         
         return (
@@ -47,15 +49,7 @@ const VideoGrid = ({
                   value={video.url}
                   onChange={(e) => handleUrlChange(e, video.id)}
                 />
-                <button 
-                  className="play-toggle" 
-                  onClick={() => handleTogglePlay(video.id)}
-                >
-                  {isGeneric
-                    ? (video.isMuted ? 'Unmute' : 'Mute')
-                    : buttonText
-                  }
-                </button>
+                {/* The play/toggle button has been removed from here */}
               </div>
             )}
             <VideoPlayer 
@@ -72,3 +66,4 @@ const VideoGrid = ({
 };
 
 export default VideoGrid;
+

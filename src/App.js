@@ -54,12 +54,12 @@ function App() {
     };
   }, [borderlessMode]);
 
-  const handleUrlChange = (e, id) => {
-    const newVideos = videos.map(video =>
-      video.id === id ? { ...video, url: e.target.value } : video
-    );
-    setVideos(newVideos);
-  };
+  // Renamed from handleUrlChange to be more generic. It now expects the final value.
+  const updateVideoUrl = useCallback((id, newUrl) => {
+    setVideos(prevVideos => prevVideos.map(video =>
+      video.id === id ? { ...video, url: newUrl } : video
+    ));
+  }, []);
   
   const handlePlayerStateChange = useCallback((id, newState) => {
     setVideos(prevVideos =>
@@ -68,35 +68,6 @@ function App() {
       )
     );
   }, []);
-
-  const handleTogglePlay = (id) => {
-    const player = playerRefs.current[id];
-    if (!player) return;
-
-    const video = videos.find(v => v.id === id);
-    if (!video) return;
-
-    const currentlyPlaying = video.playerState === 'playing';
-    const newMutedState = currentlyPlaying ? true : false;
-
-    if (player.playVideo) { // YouTube
-      currentlyPlaying ? player.pauseVideo() : player.playVideo();
-      newMutedState ? player.mute() : player.unMute();
-    } else if (player.getPlayerState) { // Twitch
-      currentlyPlaying ? player.pause() : player.play();
-      player.setMuted(newMutedState);
-    } else if (player instanceof HTMLVideoElement) { // Generic Stream
-      player.muted = !player.muted;
-      setVideos(prevVideos => prevVideos.map(v => 
-        v.id === id ? { ...v, isMuted: player.muted } : v
-      ));
-      return; 
-    }
-    
-    setVideos(prevVideos => prevVideos.map(v => 
-      v.id === id ? { ...v, isMuted: newMutedState } : v
-    ));
-  };
 
   const handlePlayerReady = useCallback((id, player) => {
     playerRefs.current[id] = player;
@@ -139,8 +110,7 @@ function App() {
         videos={videos}
         gridLayout={gridLayout}
         borderlessMode={borderlessMode}
-        handleUrlChange={handleUrlChange}
-        handleTogglePlay={handleTogglePlay}
+        onUrlChange={updateVideoUrl} // Prop is renamed for clarity
         handlePlayerStateChange={handlePlayerStateChange}
         handlePlayerReady={handlePlayerReady}
       />
