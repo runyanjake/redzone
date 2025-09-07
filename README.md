@@ -16,6 +16,9 @@ This project can stream the following types of content:
 ![redzone](static/screenshot1.png)
 ![borderless](static/screenshot2.png)
 
+## Misc
+![kanban](static/screenshot3.png)
+
 ## Example Explicit Streams
 
 | Title | Link | Type |
