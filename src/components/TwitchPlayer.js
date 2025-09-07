@@ -1,33 +1,39 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useRef, useEffect, useImperativeHandle, forwardRef } from 'react';
 
-/**
- * Handles embedding and controlling Twitch streams using the Twitch Embed API.
- */
-const TwitchPlayer = ({ channel, onTogglePlay, onPlayerReady }) => {
+const TwitchPlayer = forwardRef(({ channel, onReady }, ref) => {
   const embedRef = useRef(null);
+  const playerRef = useRef(null);
+  const onReadyRef = useRef(onReady);
 
+  // Keep the ref updated with the latest onReady function without causing re-renders.
   useEffect(() => {
-    let player = null;
+    onReadyRef.current = onReady;
+  });
+
+  // Expose API to parent component.
+  useImperativeHandle(ref, () => ({
+    play: () => playerRef.current?.play(),
+    pause: () => playerRef.current?.pause(),
+    mute: () => playerRef.current?.setMuted(true),
+    unMute: () => playerRef.current?.setMuted(false),
+  }));
+  
+  useEffect(() => {
     const initializePlayer = () => {
       if (window.Twitch && embedRef.current) {
-        player = new window.Twitch.Player(embedRef.current.id, {
+        const player = new window.Twitch.Player(embedRef.current.id, {
           channel: channel,
           width: '100%',
           height: '100%',
-          parent: [window.location.hostname], // IMPORTANT: Required by Twitch API
-          muted: true, // Start muted to allow autoplay
-          //Cannot set controls=false here, as twitch forces controls to be visible.
+          parent: [window.location.hostname],
+          muted: true,
         });
 
         player.addEventListener(window.Twitch.Player.READY, () => {
-          if (onPlayerReady) {
-            // Pass the player instance and its type back to the parent.
-            onPlayerReady({ player, type: 'twitch' });
-          }
+          playerRef.current = player;
+          // Call the latest onReady function via the ref.
+          onReadyRef.current(); 
         });
-
-        player.addEventListener(window.Twitch.Player.PLAYING, () => onTogglePlay('playing'));
-        player.addEventListener(window.Twitch.Player.PAUSED, () => onTogglePlay('paused'));
       }
     };
 
@@ -40,21 +46,20 @@ const TwitchPlayer = ({ channel, onTogglePlay, onPlayerReady }) => {
     } else {
       initializePlayer();
     }
-
+    
     const currentEmbedRef = embedRef.current;
     return () => {
-        if (currentEmbedRef) {
-            currentEmbedRef.innerHTML = "";
-        }
-    }
+      if (currentEmbedRef) {
+        currentEmbedRef.innerHTML = "";
+      }
+    };
+    // By removing onReady from the dependency array, we prevent the effect from re-running.
+  }, [channel]);
 
-  }, [channel, onPlayerReady, onTogglePlay]);
-
-  // Give the embed div a unique ID to prevent conflicts
   const embedId = `twitch-embed-${channel}-${Math.random().toString(36).substring(7)}`;
 
   return <div id={embedId} ref={embedRef} style={{ width: '100%', height: '100%' }} />;
-};
+});
 
 export default TwitchPlayer;
 

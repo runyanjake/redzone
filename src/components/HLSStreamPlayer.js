@@ -1,29 +1,51 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useImperativeHandle, forwardRef, useEffect } from 'react';
 
-//Generic video player for HLS streams, embedding them in an Iframe.
-const HLSStreamPlayer = ({ streamUrl, onPlayerReady }) => {
+const HLSStreamPlayer = forwardRef(({ streamUrl, onReady }, ref) => {
   const videoRef = useRef(null);
+  const isReadyRef = useRef(false); // Flag to ensure onReady is only called once
 
-  // Notify the caller when the player is ready.
+  // Expose API to parent component.
+  useImperativeHandle(ref, () => ({
+    play: () => videoRef.current?.play(),
+    pause: () => videoRef.current?.pause(),
+    mute: () => { if(videoRef.current) videoRef.current.muted = true; },
+    unMute: () => { if(videoRef.current) videoRef.current.muted = false; },
+  }));
+
+  // The 'canplay' event is a good signal that the video is ready.
   useEffect(() => {
-    if (videoRef.current && onPlayerReady) {
-      // Pass the player instance and its type back to the parent.
-      onPlayerReady({ player: videoRef.current, type: 'hls' });
+    const videoElement = videoRef.current;
+
+    // This handler ensures that we only call the onReady prop the first time.
+    const handleCanPlay = () => {
+      if (!isReadyRef.current) {
+        isReadyRef.current = true;
+        onReady();
+      }
+    };
+
+    if (videoElement) {
+      videoElement.addEventListener('canplay', handleCanPlay);
     }
-  }, [onPlayerReady]);
+    return () => {
+      if (videoElement) {
+        videoElement.removeEventListener('canplay', handleCanPlay);
+      }
+    };
+  }, [onReady]);
 
   return (
-    <video 
-      ref={videoRef} 
+    <video
+      ref={videoRef}
       src={streamUrl}
-      style={{ width: '100%', height: '100%', backgroundColor: 'black' }} 
-      controls={true} //Enable stream controls
-      autoPlay={true}
-      muted={true} // Start muted to comply with browser autoplay policies
+      style={{ width: '100%', height: '100%', backgroundColor: 'black' }}
+      controls={true}
+      // autoPlay is removed. Playback is controlled imperatively from the parent.
+      muted={true}
       loop={true}
     />
   );
-};
+});
 
 export default HLSStreamPlayer;
 

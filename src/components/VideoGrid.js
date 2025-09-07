@@ -2,12 +2,11 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import VideoPlayer from './VideoPlayer';
 import { calculateOptimalGrid, getVideoGridPosition } from '../utils/gridUtils';
 
-//Grid object defining a layout and managing a list of videos.
-// Divides space among videos and manages state.
 function VideoGrid() {
-  const [videos, setVideos] = useState([{ id: 1, url: '', playerState: 'unstarted', isMuted: true }]);
+  const [videos, setVideos] = useState([{ id: 1, url: '' }]);
   const [gridLayout, setGridLayout] = useState({ rows: 1, cols: 1 });
   const [borderlessMode, setBorderlessMode] = useState(false);
+  // This ref will now hold references to our component's imperative handles.
   const playerRefs = useRef({});
   const containerRef = useRef(null);
 
@@ -24,76 +23,43 @@ function VideoGrid() {
 
   useEffect(() => {
     const handleFullscreenChange = () => {
-      const isFullscreen = !!(document.fullscreenElement || 
-                             document.webkitFullscreenElement || 
-                             document.mozFullScreenElement || 
-                             document.msFullscreenElement);
+      const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement);
       setBorderlessMode(isFullscreen);
     };
-
     const handleKeyPress = (event) => {
       if (event.key === 'Escape' && borderlessMode) {
         event.preventDefault();
-        event.stopPropagation();
         setBorderlessMode(false);
       }
     };
-
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
-    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
-    
     document.addEventListener('keydown', handleKeyPress, true);
-
     return () => {
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
       document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
-      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
-      document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
       document.removeEventListener('keydown', handleKeyPress, true);
     };
   }, [borderlessMode]);
 
   const updateVideoUrl = useCallback((id, newUrl) => {
-    setVideos(prevVideos => prevVideos.map(video =>
-      video.id === id ? { ...video, url: newUrl } : video
-    ));
-  }, []);
-  
-  const handlePlayerStateChange = useCallback((id, newState) => {
-    setVideos(prevVideos =>
-      prevVideos.map(video =>
-        video.id === id ? { ...video, playerState: newState } : video
-      )
-    );
+    setVideos(prev => prev.map(v => (v.id === id ? { ...v, url: newUrl } : v)));
   }, []);
 
-  const handlePlayerReady = useCallback((id, playerData) => {
-    const { player, type } = playerData;
-    playerRefs.current[id] = player;
-
-    //Unmute and start players when player is ready.
-    switch (type) {
-      case 'youtube':
-        player.unMute();
-        player.playVideo();
-        break;
-      case 'twitch':
-        player.setMuted(false);
-        player.play();
-        break;
-      case 'hls':
-        player.muted = false;
-        player.play().catch(e => console.error("Autoplay was prevented by browser:", e));
-        break;
-      default:
-        console.warn('Unknown player type ready:', type);
+  /**
+   * This function is now the trigger. Once a player component signals it's ready,
+   * we use its ref to call the imperative 'play' and 'unMute' methods.
+   */
+  const handlePlayerReady = useCallback((id) => {
+    const playerAPI = playerRefs.current[id]?.current;
+    if (playerAPI) {
+      playerAPI.play();
+      playerAPI.unMute();
     }
   }, []);
 
   const handleAddVideo = () => {
-    setVideos([...videos, { id: Date.now(), url: '', playerState: 'unstarted', isMuted: true }]);
+    setVideos(prev => [...prev, { id: Date.now(), url: '' }]);
   };
 
   const handleUrlChange = (e, id) => {
@@ -106,47 +72,38 @@ function VideoGrid() {
         <div className="header">
           <h1 className="title">Web Video Redzone</h1>
           <div className="header-buttons">
-            <button 
-              className="borderless-toggle" 
-              onClick={() => setBorderlessMode(!borderlessMode)}
-            >
+            <button className="borderless-toggle" onClick={() => setBorderlessMode(p => !p)}>
               {borderlessMode ? 'Exit Borderless' : 'Borderless Mode'}
             </button>
-            <button 
-              className="add-button" 
-              onClick={handleAddVideo}
-            >
+            <button className="add-button" onClick={handleAddVideo}>
               + Add Video
             </button>
           </div>
         </div>
       )}
       {borderlessMode && (
-        <div 
-          className="borderless-hint"
-          onClick={() => setBorderlessMode(false)}
-        >
+        <div className="borderless-hint" onClick={() => setBorderlessMode(false)}>
           Press ESC or click here to exit
         </div>
       )}
-      <div 
+      <div
         className="video-grid"
         style={{
           gridTemplateRows: `repeat(${gridLayout.rows}, 1fr)`,
-          gridTemplateColumns: `repeat(${gridLayout.cols}, 1fr)`
+          gridTemplateColumns: `repeat(${gridLayout.cols}, 1fr)`,
         }}
       >
         {videos.map((video, index) => {
+          // Ensure a ref object exists for each video
+          if (!playerRefs.current[video.id]) {
+            playerRefs.current[video.id] = React.createRef();
+          }
           const gridPosition = getVideoGridPosition(index, videos.length, gridLayout.cols);
-          
           return (
-            <div 
-              key={video.id} 
+            <div
+              key={video.id}
               className={`video-element ${borderlessMode ? 'borderless' : ''}`}
-              style={{ 
-                gridColumn: gridPosition.gridColumn, 
-                gridRow: gridPosition.gridRow 
-              }}
+              style={{ gridColumn: gridPosition.gridColumn, gridRow: gridPosition.gridRow }}
             >
               {!borderlessMode && (
                 <div className="top-row-controls">
@@ -154,15 +111,14 @@ function VideoGrid() {
                     type="text"
                     placeholder="YouTube, Twitch, or stream URL"
                     value={video.url}
-                    onChange={(e) => handleUrlChange(e, video.id)}
+                    onChange={e => handleUrlChange(e, video.id)}
                   />
                 </div>
               )}
-              <VideoPlayer 
+              <VideoPlayer
+                ref={playerRefs.current[video.id]}
                 url={video.url}
-                videoId={video.id}
-                onTogglePlay={handlePlayerStateChange}
-                onPlayerReady={handlePlayerReady}
+                onReady={() => handlePlayerReady(video.id)}
               />
             </div>
           );

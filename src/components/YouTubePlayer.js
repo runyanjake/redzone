@@ -1,38 +1,31 @@
-import React from 'react';
+import React, { useRef, useImperativeHandle, forwardRef } from 'react';
 import YouTube from 'react-youtube';
 
-/**
- * Handles the embedding and control of YouTube videos.
- */
-const YouTubePlayer = ({ videoId, onTogglePlay, onPlayerReady }) => {
+const YouTubePlayer = forwardRef(({ videoId, onReady }, ref) => {
+  const playerRef = useRef(null);
 
-  const onReady = (event) => {
-    if (onPlayerReady) {
-      // Pass the player instance and its type back to the parent.
-      onPlayerReady({ player: event.target, type: 'youtube' });
-    }
-  };
+  // Expose API to parent component.
+  useImperativeHandle(ref, () => ({
+    play: () => playerRef.current?.playVideo(),
+    pause: () => playerRef.current?.pauseVideo(),
+    mute: () => playerRef.current?.mute(),
+    unMute: () => playerRef.current?.unMute(),
+  }));
 
-  const onStateChange = (event) => {
-    const playerStatus = event.data;
-    if (playerStatus === window.YT.PlayerState.PLAYING) {
-      onTogglePlay('playing');
-    } else if (playerStatus === window.YT.PlayerState.PAUSED) {
-      onTogglePlay('paused');
-    } else if (playerStatus === window.YT.PlayerState.ENDED) {
-      onTogglePlay('ended');
-    }
+  const handleReady = (event) => {
+    playerRef.current = event.target;
+    onReady(); // Signal to the parent that the player is ready to be controlled.
   };
 
   const opts = {
     width: '100%',
     height: '100%',
     playerVars: {
-      controls: 1, //Allow controls to be displayed
+      controls: 1,
       loop: 1,
       playlist: videoId,
-      autoplay: 1, //Auto play the current (and any following if playlist) videos.
-      rel: 0, // Do not show related videos, as this would cause them to autoplay.
+      autoplay: 1,
+      rel: 0,
     },
   };
 
@@ -41,13 +34,12 @@ const YouTubePlayer = ({ videoId, onTogglePlay, onPlayerReady }) => {
       <YouTube
         videoId={videoId}
         opts={opts}
-        onReady={onReady}
-        onStateChange={onStateChange}
+        onReady={handleReady}
         className="youtube-iframe"
       />
     </div>
   );
-};
+});
 
 export default YouTubePlayer;
 
