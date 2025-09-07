@@ -16,4 +16,5 @@ This project can stream the following types of content:
 ![redzone](static/screenshot1.png)
 ![borderless](static/screenshot2.png)
 
-
+## Build
+`docker compose down && docker compose up --build -d && docker logs -f redzone`
