@@ -1,53 +1,14 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import VideoPlayer from './components/VideoPlayer';
-import { getYouTubeVideoId, getTwitchChannel } from './utils/videoUtils';
+import VideoGrid from './components/VideoGrid';
+import { calculateOptimalGrid } from './utils/gridUtils';
 import './App.css';
 
 function App() {
-  // State now includes an `isMuted` flag for each video
   const [videos, setVideos] = useState([{ id: 1, url: '', playerState: 'unstarted', isMuted: true }]);
   const [gridLayout, setGridLayout] = useState({ rows: 1, cols: 1 });
   const [borderlessMode, setBorderlessMode] = useState(false);
   const playerRefs = useRef({});
   const containerRef = useRef(null);
-
-  const getVideoGridPosition = (videoIndex, totalVideos, gridCols) => {
-    const fullRows = Math.floor(totalVideos / gridCols);
-    const videosInLastRow = totalVideos % gridCols;
-    
-    if (videoIndex < fullRows * gridCols) {
-      return {
-        gridColumn: (videoIndex % gridCols) + 1,
-        gridRow: Math.floor(videoIndex / gridCols) + 1
-      };
-    } else {
-      if (videosInLastRow === 0) {
-        return {
-          gridColumn: (videoIndex % gridCols) + 1,
-          gridRow: Math.floor(videoIndex / gridCols) + 1
-        };
-      } else {
-        const startCol = Math.floor((gridCols - videosInLastRow) / 2) + 1;
-        const colInLastRow = videoIndex - (fullRows * gridCols);
-        return {
-          gridColumn: startCol + colInLastRow,
-          gridRow: fullRows + 1
-        };
-      }
-    }
-  };
-
-  const calculateOptimalGrid = (videoCount) => {
-    if (videoCount <= 0) return { rows: 1, cols: 1 };
-    if (videoCount === 1) return { rows: 1, cols: 1 };
-    if (videoCount === 2) return { rows: 1, cols: 2 };
-    
-    const nextSquare = Math.ceil(Math.sqrt(videoCount));
-    const rows = nextSquare;
-    const cols = Math.ceil(videoCount / rows);
-    
-    return { rows, cols };
-  };
 
   useEffect(() => {
     const updateLayout = () => {
@@ -118,7 +79,6 @@ function App() {
     const currentlyPlaying = video.playerState === 'playing';
     const newMutedState = currentlyPlaying ? true : false;
 
-    // Player-specific logic
     if (player.playVideo) { // YouTube
       currentlyPlaying ? player.pauseVideo() : player.playVideo();
       newMutedState ? player.mute() : player.unMute();
@@ -133,7 +93,6 @@ function App() {
       return; 
     }
     
-    // Update state for YouTube and Twitch
     setVideos(prevVideos => prevVideos.map(v => 
       v.id === id ? { ...v, isMuted: newMutedState } : v
     ));
@@ -176,53 +135,15 @@ function App() {
           Press ESC or click here to exit
         </div>
       )}
-      <div 
-        className="video-grid"
-        style={{
-          gridTemplateRows: `repeat(${gridLayout.rows}, 1fr)`,
-          gridTemplateColumns: `repeat(${gridLayout.cols}, 1fr)`
-        }}
-      >
-        {videos.map((video, index) => {
-          const buttonText = video.playerState === 'playing' ? 'Pause / Mute' : 'Play / Unmute';
-          const isGeneric = video.url && !getYouTubeVideoId(video.url) && !getTwitchChannel(video.url);
-          const gridPosition = getVideoGridPosition(index, videos.length, gridLayout.cols);
-          
-          return (
-            <div 
-              key={video.id} 
-              className={`video-element ${borderlessMode ? 'borderless' : ''}`}
-              style={{ gridColumn: gridPosition.gridColumn, gridRow: gridPosition.gridRow }}
-            >
-              {!borderlessMode && (
-                <div className="top-row-controls">
-                  <input
-                    type="text"
-                    placeholder="YouTube, Twitch, or stream URL"
-                    value={video.url}
-                    onChange={(e) => handleUrlChange(e, video.id)}
-                  />
-                  <button 
-                    className="play-toggle" 
-                    onClick={() => handleTogglePlay(video.id)}
-                  >
-                    {isGeneric
-                      ? (video.isMuted ? 'Unmute' : 'Mute')
-                      : buttonText
-                    }
-                  </button>
-                </div>
-              )}
-              <VideoPlayer 
-                url={video.url}
-                videoId={video.id}
-                onTogglePlay={handlePlayerStateChange}
-                onPlayerReady={handlePlayerReady}
-              />
-            </div>
-          );
-        })}
-      </div>
+      <VideoGrid 
+        videos={videos}
+        gridLayout={gridLayout}
+        borderlessMode={borderlessMode}
+        handleUrlChange={handleUrlChange}
+        handleTogglePlay={handleTogglePlay}
+        handlePlayerStateChange={handlePlayerStateChange}
+        handlePlayerReady={handlePlayerReady}
+      />
     </div>
   );
 }
