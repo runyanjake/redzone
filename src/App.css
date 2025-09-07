@@ -19,19 +19,27 @@ body {
   background-color: var(--color-background);
   color: var(--color-text-primary);
   font-family: Arial, sans-serif;
+  margin: 0;
+  overflow: hidden;
 }
 
 .app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
   text-align: center;
-  padding: 20px;
+}
+
+.app.borderless-mode {
+  padding: 0;
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  padding: 0 10px;
+  padding: 10px 20px;
+  flex-shrink: 0;
 }
 
 .header-buttons {
@@ -44,21 +52,14 @@ body {
   flex: 1;
 }
 
-.video-grid {
-  display: grid;
-  gap: 10px;
-  height: calc(100vh - 140px); /* Account for header and padding */
-  width: 100%;
+.main-content {
+  flex-grow: 1;
+  padding: 20px;
+  min-height: 0;
 }
 
-/* Borderless mode styles */
-.app.borderless-mode {
+.app.borderless-mode .main-content {
   padding: 0;
-}
-
-.app.borderless-mode .video-grid {
-  height: 100vh;
-  gap: 0;
 }
 
 .borderless-hint {
@@ -86,50 +87,6 @@ body {
   20% { opacity: 1; }
   80% { opacity: 1; }
   100% { opacity: 0; }
-}
-
-.video-element {
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--color-border);
-  padding: 10px;
-  background-color: var(--color-surface-1);
-  border-radius: 8px;
-  min-height: 0; /* Allow flex items to shrink */
-  overflow: hidden;
-}
-
-.video-element.borderless {
-  border: none;
-  padding: 0;
-  background-color: transparent;
-  border-radius: 0;
-}
-
-.top-row-controls {
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.top-row-controls input {
-  flex: 1;
-  padding: 8px;
-  border: 1px solid var(--color-surface-hover);
-  background-color: var(--color-surface-2);
-  color: var(--color-text-primary);
-  border-radius: 4px;
-  margin-right: 10px;
-}
-
-.play-toggle {
-  padding: 8px 12px;
-  border: none;
-  background-color: var(--color-accent-primary);
-  color: var(--color-text-primary);
-  border-radius: 4px;
-  cursor: pointer;
-  white-space: nowrap;
 }
 
 .borderless-toggle {
@@ -163,3 +120,4 @@ body {
 .add-button:hover {
   background-color: var(--color-accent-hover);
 }
+

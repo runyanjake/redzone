@@ -1,0 +1,44 @@
+.video-grid {
+  display: grid;
+  gap: 10px;
+  height: 100%;
+  width: 100%;
+}
+
+.app.borderless-mode .video-grid {
+  gap: 0;
+}
+
+.video-element {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--color-border);
+  padding: 10px;
+  background-color: var(--color-surface-1);
+  border-radius: 8px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.video-element.borderless {
+  border: none;
+  padding: 0;
+  background-color: transparent;
+  border-radius: 0;
+}
+
+.top-row-controls {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.top-row-controls input {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid var(--color-surface-hover);
+  background-color: var(--color-surface-2);
+  color: var(--color-text-primary);
+  border-radius: 4px;
+}
+
