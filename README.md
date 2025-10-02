@@ -16,8 +16,9 @@ This project can stream the following types of content:
 ![redzone](static/screenshot1.png)
 ![borderless](static/screenshot2.png)
 
-## Misc
-![kanban](static/screenshot3.png)
+## Project Tracking
+![alt text](static/kanban.png)
+*Kanban Board (Updated 10/01/25)*
 
 ## Example Explicit Streams
 
